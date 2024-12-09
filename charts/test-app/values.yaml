@@ -8,7 +8,7 @@ image:
   # This sets the pull policy for images.
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: helm
+  tag: argocd
 
 # This is to override the chart name.
 # nameOverride: ""
