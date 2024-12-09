@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "test-app.fullname" . }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  rules:
+  - host: {{ include "test-app.fullname" . }}.orlando-k8s-test.duckdns.org
+    http:
+      paths:
+      - backend:
+          service:
+            name: {{ include "test-app.fullname" . }}
+            port:
+              number: {{ .Values.service.port }}
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - {{ include "test-app.fullname" . }}.orlando-k8s-test.duckdns.org
+    secretName: test-app-secret

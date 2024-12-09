@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "test-app.fullname" . }}
+  labels:
+    app: {{ include "test-app.fullname" . }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "test-app.fullname" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "test-app.fullname" . }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: Always
+          env:
+            - name: APP_NAME
+              value: {{ include "test-app.fullname" . }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          {{ if .Values.enablePVC }}
+          volumeMounts:
+            - name: pure-share
+              mountPath: /pure/share/users
+            - name: pure-crypta
+              mountPath: /crypta
+          {{ end }}
+      {{ if .Values.enablePVC }}
+      volumes:
+        - name: pure-share
+          persistentVolumeClaim:
+            claimName: pure-share
+        - name: pure-crypta
+          persistentVolumeClaim:
+            claimName: pure-crypta
+      {{ end }}

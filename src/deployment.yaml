@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: # Deployment object metadata
+  name: test-app-deployment
+  namespace: test-orlando
+spec: # This is the spec for the deployment object.
+  replicas: 1
+  selector: # This selects the pods to control
+    matchLabels: # This can be also matchExpressions
+      app: test-app # This must match the pod labels in number and values.
+  template: # Here i'm specifying a Pod object template.
+    metadata: # Pod object metadata
+      labels:
+        app: test-app # Here the key and value are up to you. You can have multiple labels
+    spec: # Pod object specification
+      containers:
+        - name: test-node-app
+          image: orjoeslo/first-k8s-app:2
+          imagePullPolicy: Always
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            periodSeconds: 10
+            initialDelaySeconds: 5
