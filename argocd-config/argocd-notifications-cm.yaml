@@ -1,0 +1,58 @@
+apiVersion: v1
+data:
+  service.webhook.deployment-status-notifier: |
+    url: https://flask-web-socket-staging.devops-crc.duckdns.org
+    headers:
+    - name: Content-Type
+      value: application/json
+  subscriptions: |
+    - recipients:
+      - deployment-status-notifier
+      triggers:
+        - on-status-changed
+        - on-app-terminating
+  template.app-status-changed: |
+      webhook:
+        deployment-status-notifier:
+          method: POST
+          path: /test-argocd
+          body: |
+            {
+              "app_name": "{{ .app.metadata.name }}",
+              "labels": "{{ .app.metadata.labels }}",
+              "status": "{{.app.status.operationState.phase}}",
+              "urls": "{{ .app.status.summary.externalURLs }}"
+            }
+  template.app-terminating: |
+    webhook:
+      deployment-status-notifier:
+        method: POST
+        path: /test-argocd
+        body: |
+          {
+              "app_name": "{{ .app.metadata.name }}",
+              "labels": "{{ .app.metadata.labels }}",
+              "status": "Terminating",
+              "urls": "{{ .app.status.summary.externalURLs }}"
+          }   
+  trigger.on-status-changed: |
+    - when: app.status.operationState.phase == 'Running'
+      description: Application status has changed to 'Running'
+      send: [app-status-changed]
+    - when: app.status.operationState.phase == 'Succeeded'
+      description: Application status has changed to 'Succeeded'
+      send: [app-status-changed]
+    - when: app.status.operationState.phase in ['Terminating', 'Error', 'Failed']
+      description: Application status has changed to '{{ app.status.operationState.phase }}'
+      send: [app-status-changed]
+  trigger.on-app-terminating: |
+    - when: app.metadata.deletionTimestamp != null
+      description: Application is being deleted
+      send: [app-terminating]
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2024-05-23T07:23:47Z"
+  name: argocd-notifications-cm
+  namespace: argocd
+  resourceVersion: "67660526"
+  uid: 9a8eb7eb-53a2-4ba3-897f-439cb19e5a12
