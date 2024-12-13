@@ -12,17 +12,14 @@ data:
         - on-status-changed
         - on-app-terminating
   template.app-status-changed: |
-      webhook:
-        deployment-status-notifier:
-          method: POST
-          path: /test-argocd
-          body: |
-            {
-              "app_name": "{{ .app.metadata.name }}",
-              "labels": "{{ .app.metadata.labels }}",
-              "status": "{{.app.status.operationState.phase}}",
-              "urls": "{{ .app.status.summary.externalURLs }}"
-            }
+    webhook:
+      deployment-status-notifier:
+        method: POST
+        path: /test-argocd
+        body: |
+          {
+            "status": "{{.app.status.operationState.phase}}"
+          }
   template.app-terminating: |
     webhook:
       deployment-status-notifier:
@@ -30,10 +27,7 @@ data:
         path: /test-argocd
         body: |
           {
-              "app_name": "{{ .app.metadata.name }}",
-              "labels": "{{ .app.metadata.labels }}",
-              "status": "Terminating",
-              "urls": "{{ .app.status.summary.externalURLs }}"
+            "status": "Terminating",
           }   
   trigger.on-status-changed: |
     - when: app.status.operationState.phase == 'Running'
