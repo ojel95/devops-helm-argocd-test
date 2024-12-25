@@ -47,3 +47,23 @@ and print it the application.
 ```bash
 curl -X POST https://flask-web-socket-staging.devops-crc.duckdns.org/test-argocd -d '{"key":"value"}' -H "Content-Type: application/json"
 ```
+
+## Create an ArgoCD deployment app
+
+1. The best practice is to have the ArgoCD application configuration as yaml file versioned in your repository.
+   For example: `./argocd/apps/test-app.yaml`
+2. The app configuration is not applied automatically. You have to Log in into the ArgoCD controller interface as an admin
+   and tap in "**+ NEW APP**".
+
+   **NOTE:** Remember that you can check the ArgoCD admin credentials in the secret located in the ArgoCD's namespace in your cluster.
+
+3. Click on "**EDIT AS YAML**" and paste the configuration yaml content.
+4. Click on **CREATE**
+5. The target namespace is not created by ArgoCD. Create the namespace `kubectl create namespace NAMESPACE_NAME`
+6. If the docker repository is not public, add the docker registry secret so the docker images can be pulled. Ex.
+
+```bash
+kubectl create secret docker-registry  docker-pull-secret --docker-username=USERNAME --docker-password=DOCKER_PASSWORD --docker-server=https://index.docker.io/v1/ -n NAMESPACE_NAME
+```
+
+7. Add the TLS secret for the ingress that will be deployed. Check the documentation in [KEEPME.md](./certs/KEEPME.md) for TLS secret generation process.
